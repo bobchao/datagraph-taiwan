@@ -54,6 +54,10 @@ function townLabelCandidates(countyKey: string, townLabel: string): string[] {
   if (countyKey === '桃園市' && townLabel.endsWith('鄉')) {
     cands.push(`${townLabel.slice(0, -1)}區`)
   }
+  // 桃園升格前的大溪鎮改制為大溪區。
+  if (countyKey === '桃園市' && townLabel === '大溪鎮') {
+    cands.push('大溪區')
+  }
 
   return [...new Set(cands)]
 }
