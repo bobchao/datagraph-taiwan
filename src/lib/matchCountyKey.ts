@@ -50,6 +50,10 @@ function townLabelCandidates(countyKey: string, townLabel: string): string[] {
   if (countyKey === '桃園市' && townLabel.endsWith('市')) {
     cands.push(`${townLabel.slice(0, -1)}區`)
   }
+  // 桃園部分舊制鄉在資料中也可能沿用舊名（如復興鄉→復興區）。
+  if (countyKey === '桃園市' && townLabel.endsWith('鄉')) {
+    cands.push(`${townLabel.slice(0, -1)}區`)
+  }
 
   return [...new Set(cands)]
 }
