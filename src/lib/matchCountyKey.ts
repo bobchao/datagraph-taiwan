@@ -40,6 +40,20 @@ function normalizeTownLabel(raw: string): string {
   return s
 }
 
+function townLabelCandidates(countyKey: string, townLabel: string): string[] {
+  const cands = [townLabel]
+
+  // 彰化縣員林鎮於 2015 升格為員林市。
+  if (townLabel === '員林鎮') cands.push('員林市')
+
+  // 桃園升格後，原縣轄市多改制為區（如楊梅市→楊梅區）。
+  if (countyKey === '桃園市' && townLabel.endsWith('市')) {
+    cands.push(`${townLabel.slice(0, -1)}區`)
+  }
+
+  return [...new Set(cands)]
+}
+
 export function matchTownCsvCellToMapKey(
   countyKey: string,
   csvTownCell: string,
@@ -48,16 +62,20 @@ export function matchTownCsvCellToMapKey(
   if (!isMeaningfulPlaceText(csvTownCell)) return null
   const townLabel = normalizeTownLabel(csvTownCell)
   if (!townLabel) return null
-  const direct = `${countyKey}|${townLabel}`
-  if (validKeys.has(direct)) return direct
+  for (const candidate of townLabelCandidates(countyKey, townLabel)) {
+    const direct = `${countyKey}|${candidate}`
+    if (validKeys.has(direct)) return direct
+  }
 
   const prefix = `${countyKey}|`
   const towns = [...validKeys]
     .filter((k) => k.startsWith(prefix))
     .map((k) => k.slice(prefix.length))
-  for (const t of towns) {
-    if (townLabel.startsWith(t) || t.startsWith(townLabel)) {
-      return `${countyKey}|${t}`
+  for (const candidate of townLabelCandidates(countyKey, townLabel)) {
+    for (const t of towns) {
+      if (candidate.startsWith(t) || t.startsWith(candidate)) {
+        return `${countyKey}|${t}`
+      }
     }
   }
   return null
